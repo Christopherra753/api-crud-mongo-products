@@ -1,4 +1,5 @@
 import Product from '../models/product.model.js'
+import { valdiateProduct, validatePartialProduct } from '../schemas/product.schema.js'
 
 export const getProducts = async (req, res) => {
   const products = await Product.find()
@@ -6,8 +7,9 @@ export const getProducts = async (req, res) => {
 }
 
 export const createProduct = async (req, res) => {
-  const { title, category, price, stock } = req.body
-  const newProduct = new Product({ title, category, price, stock })
+  const result = valdiateProduct(req.body)
+  if (result.error) return res.status(400).json(result.error.issues.map(error => error.message))
+  const newProduct = new Product(result.data)
   const savedProduct = await newProduct.save()
   res.json(savedProduct)
 }
@@ -28,7 +30,9 @@ export const deleteProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   const { id } = req.params
-  const product = await Product.findByIdAndUpdate(id, req.body, { new: true })
+  const result = validatePartialProduct(req.body)
+  if (result.error) return res.status(400).json(result.error.issues.map(error => error.message))
+  const product = await Product.findByIdAndUpdate(id, result.data, { new: true })
   if (!product) return res.status(404).json(['Product not found'])
   res.json(product)
 }
