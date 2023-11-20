@@ -19,10 +19,16 @@ export const getProduct = async (req, res) => {
   res.json(product)
 }
 
-export const deleteProduct = (req, res) => {
-  res.json('Eliminando un producto')
+export const deleteProduct = async (req, res) => {
+  const { id } = req.params
+  const product = await Product.findByIdAndDelete(id)
+  if (!product) return res.json(404).json(['Product not found'])
+  res.json(product)
 }
 
-export const updateProduct = (req, res) => {
-  res.json('Actualizando un producto')
+export const updateProduct = async (req, res) => {
+  const { id } = req.params
+  const product = await Product.findByIdAndUpdate(id, req.body, { new: true })
+  if (!product) return res.status(404).json(['Product not found'])
+  res.json(product)
 }
